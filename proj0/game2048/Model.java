@@ -5,7 +5,7 @@ import java.util.Observable;
 
 
 /** The state of a game of 2048.
- *  @author TODO: YOUR NAME HERE
+ *  @author TODO: Mohamed Yasser .
  */
 public class Model extends Observable {
     /** Current contents of the board. */
@@ -106,20 +106,52 @@ public class Model extends Observable {
      *    value, then the leading two tiles in the direction of motion merge,
      *    and the trailing tile does not.
      * */
+    public Integer get_val(Tile t){
+        if(t == null)return 0;
+        else return t.value();
+    }
     public boolean tilt(Side side) {
         boolean changed;
         changed = false;
 
-        // TODO: Modify this.board (and perhaps this.score) to account
-        // for the tilt to the Side SIDE. If the board changed, set the
-        // changed local variable to true.
+        board.setViewingPerspective(side);
+        for (int col = 0; col < board.size(); col++) {
+            int mx_row = board.size() - 1;
+            int mx_val = get_val(board.tile(col, mx_row));
 
+            for (int row = board.size() - 2; row >= 0; row--) {
+                Tile t = board.tile(col, row);
+                if (t == null) continue;
+
+                if (mx_val == 0) {
+                    board.move(col, mx_row, t);
+                    changed = true;
+                    mx_val = t.value();
+                } else if (mx_val == t.value()) {
+                    board.move(col, mx_row, t);
+                    changed = true;
+                    mx_val = 2 * t.value();
+                    score += mx_val;
+                    mx_row--;
+                    mx_val = 0;
+                } else {
+                    mx_row--;
+                    if (mx_row != row) {
+                        board.move(col, mx_row, t);
+                        changed = true;
+                    }
+                    mx_val = t.value();
+                }
+            }
+        }
+        board.setViewingPerspective(Side.NORTH);
         checkGameOver();
         if (changed) {
             setChanged();
         }
         return changed;
     }
+
 
     /** Checks if the game is over and sets the gameOver variable
      *  appropriately.
@@ -138,7 +170,15 @@ public class Model extends Observable {
      * */
     public static boolean emptySpaceExists(Board b) {
         // TODO: Fill in this function.
-        return false;
+        boolean Move = false ;
+        for(int i = 0 ; i < b.size() ; i++) {
+            for(int j = 0 ; j < b.size() ; j++){
+                if(b.tile(i , j) == null) {
+                    Move = true ;
+                }
+            }
+        }
+        return Move ;
     }
 
     /**
@@ -148,7 +188,16 @@ public class Model extends Observable {
      */
     public static boolean maxTileExists(Board b) {
         // TODO: Fill in this function.
-        return false;
+        boolean exist = false ;
+        for(int i = 0 ; i < b.size() ; i++){
+            for(int j = 0 ; j < b.size() ; j++) {
+                int value = (b.tile(i , j) == null ? 0 : b.tile(i , j).value()) ;
+                if(value == MAX_PIECE) {
+                    exist = true ;
+                }
+            }
+        }
+        return exist;
     }
 
     /**
@@ -158,8 +207,31 @@ public class Model extends Observable {
      * 2. There are two adjacent tiles with the same value.
      */
     public static boolean atLeastOneMoveExists(Board b) {
-        // TODO: Fill in this function.
-        return false;
+        boolean canMove = false ;
+        for(int i = 0 ; i<b.size() ; i++) {
+            for(int j = 0 ; j<b.size() ; j++) {
+                int value = (b.tile(i , j) == null ? 0 : b.tile(i , j).value()) ;
+                canMove |= (value == 0) ;
+
+                if(i - 1 >= 0) {
+                    int adj1 = (b.tile(i - 1 , j) == null ? 0 : b.tile(i - 1 , j).value()) ;
+                    canMove |= (value == adj1) ;
+                }
+                if(i + 1 < b.size()) {
+                    int adj2 = (b.tile(i + 1 , j) == null ? 0 : b.tile(i + 1 , j).value()) ;
+                    canMove |= (value == adj2) ;
+                }
+                if(j - 1 >= 0) {
+                    int adj3 = (b.tile(i  , j - 1) == null ? 0 : b.tile(i , j - 1).value()) ;
+                    canMove |= (value == adj3) ;
+                }
+                if(j + 1 < b.size()) {
+                    int adj4 = (b.tile(i  , j + 1) == null ? 0 : b.tile(i , j + 1).value()) ;
+                    canMove |= (value == adj4) ;
+                }
+            }
+        }
+        return  canMove ;
     }
 
 
