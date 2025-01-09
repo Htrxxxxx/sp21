@@ -1,6 +1,8 @@
 package capers;
 
 import java.io.File;
+import java.io.IOException;
+
 import static capers.Utils.*;
 
 /** A repository for Capers 
@@ -18,8 +20,7 @@ public class CapersRepository {
     static final File CWD = new File(System.getProperty("user.dir"));
 
     /** Main metadata folder. */
-    static final File CAPERS_FOLDER = null; // TODO Hint: look at the `join`
-                                            //      function in Utils
+    static final File CAPERS_FOLDER =  join(CWD, ".capers");
 
     /**
      * Does required filesystem operations to allow for persistence.
@@ -31,7 +32,32 @@ public class CapersRepository {
      *    - story -- file containing the current story
      */
     public static void setupPersistence() {
-        // TODO
+        if (!CAPERS_FOLDER.exists()) {
+            boolean success = CAPERS_FOLDER.mkdirs();
+            if (!success) {
+                throw new RuntimeException("Failed to create .capers folder.");
+            }
+        }
+
+        File dogsFolder = join(CAPERS_FOLDER, "dogs");
+        if (!dogsFolder.exists()) {
+            boolean success = dogsFolder.mkdirs();
+            if (!success) {
+                throw new RuntimeException("Failed to create dogs folder.");
+            }
+        }
+
+        File storyFile = join(CAPERS_FOLDER, "story");
+        if (!storyFile.exists()) {
+            try {
+                boolean success = storyFile.createNewFile(); // Ensure it's created as a file
+                if (!success) {
+                    throw new RuntimeException("Failed to create story file.");
+                }
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to create story file: " + e.getMessage());
+            }
+        }
     }
 
     /**
@@ -40,7 +66,23 @@ public class CapersRepository {
      * @param text String of the text to be appended to the story
      */
     public static void writeStory(String text) {
-        // TODO
+        File storyFile = join(CAPERS_FOLDER, "story");
+
+        if (!storyFile.exists() || !storyFile.isFile()) {
+            try {
+                boolean success = storyFile.createNewFile(); // Ensure it's created as a file
+                if (!success) {
+                    throw new RuntimeException("Failed to create story file.");
+                }
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to create story file: " + e.getMessage());
+            }
+        }
+
+        String currentStory = readContentsAsString(storyFile);
+        writeContents(storyFile, currentStory + text + "\n");
+
+        System.out.println(readContentsAsString(storyFile));
     }
 
     /**
@@ -49,7 +91,9 @@ public class CapersRepository {
      * Also prints out the dog's information using toString().
      */
     public static void makeDog(String name, String breed, int age) {
-        // TODO
+        Dog dog = new Dog(name, breed, age);
+        dog.saveDog();
+        System.out.println(dog.toString());
     }
 
     /**
@@ -59,6 +103,12 @@ public class CapersRepository {
      * @param name String name of the Dog whose birthday we're celebrating.
      */
     public static void celebrateBirthday(String name) {
-        // TODO
+        Dog dog = Dog.fromFile(name);
+        if (dog == null) {
+            System.out.println("Dog not found: " + name);
+            return;
+        }
+        dog.haveBirthday();
+        dog.saveDog();
     }
 }
