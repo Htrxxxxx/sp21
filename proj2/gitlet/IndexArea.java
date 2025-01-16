@@ -66,8 +66,11 @@ public class IndexArea {
     public static void removeFromAddition(String hasedPath){
           File currentFile = new File(Repository.STAGED_ADD, hasedPath);
           if (currentFile.exists()){
+              System.out.println("a7a");
               currentFile.delete();
           }
+        System.out.println(hasedPath);
+        System.out.println("I am here ");
     }
     public static void add(String fullPath, String hashedPath) throws IOException {
 
@@ -91,6 +94,75 @@ public class IndexArea {
             FileToadd.delete();
         }
         Files.copy(originFile.toPath(), FileToadd.toPath());
+    }
+
+
+
+    public static void addForRemoval(String fileName) throws IOException {
+        String fullPath = Repository.CWD.getAbsolutePath() + "/" + fileName;
+
+        /** get hased for fullPaht */
+
+        String hashedPath = HelperMethods.hashPath(fullPath);
+
+        if (existInStagedForAddition(hashedPath)){
+            removeFromAddition(hashedPath);
+        }
+        else{
+            String currentCommitSha = Commit.getCurrentCommitSha();
+            /** get current commmit*/
+            Commit currentCommit = Commit.getCommitBySha(currentCommitSha);
+            /** get tracked File by current commit*/
+            Map<String , String> trackedFilesForCurrentCommit = currentCommit.getTrackedFiles();
+
+            if (trackedFilesForCurrentCommit.containsKey(fullPath)){
+                /** remove it from cwd if exist and stage it to be removed */
+                File FileToRm = new File(fullPath);
+                remove(hashedPath, fullPath);
+                if (FileToRm.exists()) {
+                    FileToRm.delete();
+                }
+            }
+
+
+
+        }
+
+    }
+
+
+
+
+    public static void remove (String hasedPath, String fullPath) throws IOException {
+
+        File FolderToRm = new File (Repository.STAGED_RM, hasedPath);
+        if (!FolderToRm.exists()) {
+            FolderToRm.mkdir();
+        }
+        File path = new File(FolderToRm, "path");
+        if(!path.exists()) {
+            path.createNewFile();
+        }
+        Utils.writeContents(path,fullPath);
+        File originFile = new File(fullPath);
+        File FileToRm = new File(FolderToRm, originFile.getName());
+        if (FileToRm.exists()) {
+            FileToRm.delete();
+        }
+        Files.copy(originFile.toPath(), FileToRm.toPath());
+    }
+
+
+
+
+
+    public static boolean existInStagedForAddition(String hashedPath){
+        File hasedFile = new File(Repository.STAGED_ADD, hashedPath);
+        if (hasedFile.exists()){
+            System.out.println("hhhhhh");
+            return true;
+        }
+        return false;
     }
 
 

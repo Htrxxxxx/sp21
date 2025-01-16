@@ -65,6 +65,11 @@ public class Repository implements Cloneable {
     }
 
 
+    public  static void rm(String fileName) throws IOException {
+        IndexArea.addForRemoval(fileName);
+    }
+
+
 
 
 
