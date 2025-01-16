@@ -60,8 +60,8 @@ public class Repository implements Cloneable {
 
      */
     /** TODO : add this file to sageed for addition */
-    public static void add (String filename) {
-
+    public static void add (String fileName) throws IOException {
+          IndexArea.addForAddition(fileName);
     }
 
 

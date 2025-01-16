@@ -73,6 +73,33 @@ public class Commit implements Serializable {
     }
 
 
+    public static Commit getCommitBySha(String shaForCommit){
+        File currentCommit = new File(Repository.COMMITS_DIR, shaForCommit);
+        Commit commit = Utils.readObject(currentCommit, Commit.class);
+        return commit;
+    }
+
+    public static String getCurrentCommitSha(){
+        return Utils.readContentsAsString(Repository.HEAD_FILE);
+    }
+
+
+
+    public String getParentSha() {
+        return parent;
+    }
+
+    public Date getTimestamp() {
+        return timestamp;
+    }
+    public String message() {
+        return message;
+    }
+
+    public Map<String, String> getTrackedFiles() {
+        return trackedFiles;
+    }
+
 
     /* TODO: fill in the rest of this class. */
 }
