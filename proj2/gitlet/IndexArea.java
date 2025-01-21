@@ -58,6 +58,33 @@ public class IndexArea {
 
     }
 
+    public static void addForRemoval(String fileName) throws IOException {
+        String fullPath = Repository.CWD.getAbsolutePath() + "/" + fileName;
+
+        File file = new File(fullPath);
+        if(!file.exists()){
+            System.out.println("No reason to remove the file.");
+            System.exit(0);
+        }
+
+        // if the file is tracked in the current commit .
+        String hashedPath = HelperMethods.hashPath(fullPath);
+
+        if (existInStagedForAddition(hashedPath)){
+            removeFromAddition(hashedPath);
+        }
+        // TODO : If the file is tracked remove .
+
+        String Path = new File(System.getProperty("user.dir")).getAbsolutePath() + "/" + fileName;
+        if(Commit.isTrackedFile(Path)) {
+            Commit.removeFromTrackedFile(Path) ;
+        }
+
+        if(file.exists()){
+            file.delete();
+        }
+
+    }
 
     public static void removeFromRemoval(String hasedPath){
         File currentFile = new File(Repository.STAGED_RM, hasedPath);
@@ -106,25 +133,6 @@ public class IndexArea {
     }
 
 
-    public static void addForRemoval(String fileName) throws IOException {
-        String fullPath = Repository.CWD.getAbsolutePath() + "/" + fileName;
-
-        File file = new File(fullPath);
-        if(!file.exists()){
-            System.out.println("No reason to remove the file.");
-            System.exit(0);
-        }
-
-        // if the file is tracked in the current commit .
-        String hashedPath = HelperMethods.hashPath(fullPath);
-
-        if (existInStagedForAddition(hashedPath)){
-            removeFromAddition(hashedPath);
-        }
-        
-
-    }
-
 
 
 
@@ -154,11 +162,11 @@ public class IndexArea {
     public static boolean existInStagedForAddition(String hashedPath){
         File hasedFile = new File(Repository.STAGED_ADD, hashedPath);
         if (hasedFile.exists()){
-            System.out.println("hhhhhh");
             return true;
         }
         return false;
     }
+
 
 
 

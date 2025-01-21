@@ -16,7 +16,7 @@ public class Commit implements Serializable {
     private String message;
     private String parent; // in SHA1 Hashing
     private Date timestamp;
-    private Map<String, String> trackedFiles;
+    private static Map<String, String> trackedFiles;
 
 
     // this handels the intiall commit
@@ -166,4 +166,16 @@ public class Commit implements Serializable {
         return trackedFiles;
     }
 
+    static boolean isTrackedFile(String path) {
+        if(Commit.trackedFiles == null) {
+            return false ;
+        }
+        return Commit.trackedFiles.containsKey(path) ;
+    }
+    static void removeFromTrackedFile(String path) {
+        if(Commit.trackedFiles == null) {
+            return ;
+        }
+        Commit.trackedFiles.remove(path);
+    }
 }
