@@ -19,10 +19,18 @@ public class IndexArea {
      *
      *
      * */
+    /** in this part
+     * If the file we need to add in the stage area we will delete it and save the current commit if
+     * that file differ from the file in the current commit */
     public static void addForAddition(String fileName) throws IOException {
-        // we should get the complete path by concatonate the cwd path and this fileName
+         File CWDD = new File(System.getProperty("user.dir"));
+         File f = new File(CWDD , fileName) ;
+         if(!f.exists()){
+             System.out.println("File does not exist.");
+             System.exit(0);
+         }
+         // we should get the complete path by concatonate the cwd path and this fileName
          String fullPath = Repository.CWD.getAbsolutePath() + "/" + fileName;
-
          /** get hased for fullPaht */
          String hashedPath = HelperMethods.hashPath(fullPath);
          /** remove it from stage for removal if it exist*/
@@ -34,7 +42,7 @@ public class IndexArea {
          /** get tracked File by current commit*/
          Map<String , String> trackedFilesForCurrentCommit = currentCommit.getTrackedFiles();
          /** we remove file from additoin if it exist*/
-        removeFromAddition(hashedPath);
+         removeFromAddition(hashedPath);
 
         /** if it tracked and changed we add or not tracked */
          if(trackedFilesForCurrentCommit.containsKey(fullPath)){
@@ -48,32 +56,33 @@ public class IndexArea {
              IndexArea.add(fullPath, hashedPath);
          }
 
-        // then we hash it
     }
 
-
-    public static void addForRemoval(){
-
-    }
 
     public static void removeFromRemoval(String hasedPath){
-        File hasedFile = new File(Repository.STAGED_RM, hasedPath);
-        if (hasedFile.exists()){
-            hasedFile.delete();
+        File currentFile = new File(Repository.STAGED_RM, hasedPath);
+        if (currentFile.exists()){
+            String [] arr = currentFile.list();
+            for(String str : arr){
+                File file = new File(currentFile, str);
+                file.delete();
+            }
+            currentFile.delete();
         }
     }
 
     public static void removeFromAddition(String hasedPath){
           File currentFile = new File(Repository.STAGED_ADD, hasedPath);
           if (currentFile.exists()){
-              System.out.println("a7a");
+              String [] arr = currentFile.list();
+              for(String str : arr){
+                  File file = new File(currentFile, str);
+                  file.delete();
+              }
               currentFile.delete();
           }
-        System.out.println(hasedPath);
-        System.out.println("I am here ");
     }
     public static void add(String fullPath, String hashedPath) throws IOException {
-
 
         /** creat a folder for a file to add with name is the hashed path of file  added */
         File FolderToAdd = new File (Repository.STAGED_ADD, hashedPath);
@@ -86,7 +95,7 @@ public class IndexArea {
             path.createNewFile();
         }
         /** write the path inside it*/
-        Utils.writeContents(path,fullPath);
+        Utils.writeContents(path , fullPath);
         /** copy the added file to this folder*/
         File originFile = new File(fullPath);
         File FileToadd = new File(FolderToAdd, originFile.getName());
@@ -97,36 +106,22 @@ public class IndexArea {
     }
 
 
-
     public static void addForRemoval(String fileName) throws IOException {
         String fullPath = Repository.CWD.getAbsolutePath() + "/" + fileName;
 
-        /** get hased for fullPaht */
+        File file = new File(fullPath);
+        if(!file.exists()){
+            System.out.println("No reason to remove the file.");
+            System.exit(0);
+        }
 
+        // if the file is tracked in the current commit .
         String hashedPath = HelperMethods.hashPath(fullPath);
 
         if (existInStagedForAddition(hashedPath)){
             removeFromAddition(hashedPath);
         }
-        else{
-            String currentCommitSha = Commit.getCurrentCommitSha();
-            /** get current commmit*/
-            Commit currentCommit = Commit.getCommitBySha(currentCommitSha);
-            /** get tracked File by current commit*/
-            Map<String , String> trackedFilesForCurrentCommit = currentCommit.getTrackedFiles();
-
-            if (trackedFilesForCurrentCommit.containsKey(fullPath)){
-                /** remove it from cwd if exist and stage it to be removed */
-                File FileToRm = new File(fullPath);
-                remove(hashedPath, fullPath);
-                if (FileToRm.exists()) {
-                    FileToRm.delete();
-                }
-            }
-
-
-
-        }
+        
 
     }
 

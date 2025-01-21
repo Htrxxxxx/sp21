@@ -191,14 +191,12 @@ class Utils {
     /* OTHER FILE UTILITIES */
 
     /** Return the concatentation of FIRST and OTHERS into a File designator,
-     *  analogous to the {@link java.nio.file.Paths.#get(String, String[])}
      *  method. */
     static File join(String first, String... others) {
         return Paths.get(first, others).toFile();
     }
 
     /** Return the concatentation of FIRST and OTHERS into a File designator,
-     *  analogous to the {@link java.nio.file.Paths.#get(String, String[])}
      *  method. */
     static File join(File first, String... others) {
         return Paths.get(first.getPath(), others).toFile();
@@ -237,5 +235,17 @@ class Utils {
         System.out.println();
     }
 
+    static void clearDirectory (File dir) {
+        String [] files = dir.list();
+        for(String file : files) {
+            File f = new File(dir, file);
+            f.delete();
+        }
+    }
+
+    static String getFileSha(File file) throws IOException {
+        byte[] bytes = Files.readAllBytes(file.toPath());
+        return Utils.sha1(bytes);
+    }
 
 }

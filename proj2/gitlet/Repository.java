@@ -70,13 +70,9 @@ public class Repository implements Cloneable {
     }
 
 
-
-
-
-
-
-
-
+    public static void commit(String message) throws IOException {
+        Commit commit = new Commit(message);
+    }
 
 
 

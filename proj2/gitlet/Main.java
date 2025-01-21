@@ -11,16 +11,17 @@ public class Main {
      *  <COMMAND> <OPERAND1> <OPERAND2> ... 
      */
     public static void main(String[] args) throws IOException {
-        // TODO: what if args is empty?
         String firstArg = args[0];
         switch(firstArg) {
             case "init":
-                // TODO: handle the `init` command
                 Repository.init();
                 break;
             case "add":
                 Repository.add(args[1]);
-                // TODO: handle the `add [filename]` command
+                break;
+            case "commit":
+                String message = args[1];
+                Repository.commit(message) ;
                 break;
             case "rm":
                 Repository.rm(args[1]);

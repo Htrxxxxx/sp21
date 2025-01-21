@@ -1,57 +1,95 @@
 package gitlet;
 
-// TODO: any imports you need here
-
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Files;
-import java.util.Date; // TODO: You'll likely use this in this class
+import java.nio.file.StandardCopyOption;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-/** Represents a gitlet commit object.
- *  TODO: It's a good idea to give a description here of what else this Class
- *  does at a high level.
- *
- *  @author TODO
- */
+import static gitlet.Utils.getFileSha;
+//put
 public class Commit implements Serializable {
-    /**
-     * TODO: add instance variables here.
-     *
-     * List all instance variables of the Commit class here with a useful
-     * comment above them describing what that variable represents and how that
-     * variable is used. We've provided one example for `message`.
-     */
 
-    /** The message of this Commit. */
     private String message;
     private String parent; // in SHA1 Hashing
     private Date timestamp;
     private Map<String, String> trackedFiles;
 
 
-
+    // this handels the intiall commit
     public Commit () throws IOException {
         this.message = "initial commit";
         this.parent = "";
         this.timestamp = new Date(0);
-        this.trackedFiles = new HashMap<String, String>();
+        this.trackedFiles = new HashMap<>(); // path of the file  - sha1 of the content .
+
         saveCommit();
     }
-    public Commit (String message){
+    // This handel the commits
+    public Commit (String message) throws IOException {
+        this.message = message;
+        this.parent = getParentSha();
+        this.timestamp = getTimestamp();
+        trackedFiles = getTrackedFiles() ; // previos commit tracked_files
 
+        File files_added = Repository.STAGED_ADD;
+        File files_removed = Repository.STAGED_RM;
+
+        String [] added_List = files_added.list() ;
+        String [] Removed_List = files_removed.list() ;
+
+        if(added_List != null) {
+            for (String file : added_List) {
+                // This file contains the path of the file that has been modified .
+                File F2 = new File(files_added, file); // hashed File
+                String [] Added_Files = F2.list() ;
+                String B = "";
+                File FileToAdd = null ;
+                String ShaForFile = "" ;
+                for(String PathorFile : Added_Files) {
+                    if (PathorFile.equals("path")) {
+                        File PathFile = new File(F2, PathorFile);
+                        String Path = Utils.readContentsAsString(PathFile);
+                        B = Path;
+                    } else {
+                        FileToAdd = new File(F2, PathorFile);
+                    }
+                    if(FileToAdd != null) {
+                        ShaForFile = Utils.getFileSha(FileToAdd);
+                        trackedFiles.put(B, ShaForFile);
+                    }
+                }
+                File newBlob = new File(Repository.BLOBS_DIR, ShaForFile);
+                newBlob.mkdir();
+                String fileName = new File(B).getName();
+                File newFile = new File(newBlob, fileName);
+                newFile.createNewFile();
+                Files.copy(FileToAdd.toPath(), newFile.toPath() ,  StandardCopyOption.REPLACE_EXISTING);
+            }
+        }
+        if(Removed_List != null) {
+            for (String file : Removed_List) {
+                File F2 = new File(files_removed, file);
+                File f = new File(F2, "path");
+                String pathOftheremoved = Utils.readContentsAsString(f);
+                if (trackedFiles.containsKey(pathOftheremoved)) {
+                    trackedFiles.remove(pathOftheremoved);
+                }
+            }
+        }
+
+        clearIndex();
+        saveCommit() ;
     }
 
-
-
-
-
-
+    // the name of the file which will be added is the sha1
     public void saveCommit() throws IOException {
           String curCommitSha = getShaCommit();
           File curCommit = createCommitFile(curCommitSha);
+          // the content will be the serialization of it .
           Utils.writeObject(curCommit, this);
     }
 
@@ -64,7 +102,6 @@ public class Commit implements Serializable {
         tempFile.delete();
         return Utils.sha1(bytes);
     }
-
 
 
     public File createCommitFile(String name) throws IOException {
@@ -83,23 +120,50 @@ public class Commit implements Serializable {
         return Utils.readContentsAsString(Repository.HEAD_FILE);
     }
 
+    static void clearIndex () {
+        File files_added = Repository.STAGED_ADD;
+        File files_removed = Repository.STAGED_RM;
 
+        String [] added_List = files_added.list() ;
+        String [] Removed_List = files_removed.list() ;
+        if(added_List != null) {
+            for (String file : added_List) {
+                File F2 = new File(files_added, file);
+                String [] Added_Files = F2.list() ;
+                for(String PathorFile : Added_Files) {
+                    File PathFile = new File(F2 , PathorFile);
+                    PathFile.delete() ;
+                }
+                F2.delete();
+            }
+        }
+        if(Removed_List != null) {
+            for (String file : Removed_List) {
+                File F2 = new File(files_removed, file);
+                String [] Removed_Files = F2.list() ;
+                for(String PathorFile : Removed_Files) {
+                    File PathFile = new File(F2 , PathorFile);
+                    PathFile.delete() ;
+                }
+                F2.delete();
+            }
+        }
+    }
 
     public String getParentSha() {
         return parent;
     }
-
     public Date getTimestamp() {
         return timestamp;
     }
     public String message() {
         return message;
     }
-
     public Map<String, String> getTrackedFiles() {
+        if(trackedFiles == null) {
+            trackedFiles = new HashMap<>();
+        }
         return trackedFiles;
     }
 
-
-    /* TODO: fill in the rest of this class. */
 }
