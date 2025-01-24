@@ -31,8 +31,8 @@ public class Commit implements Serializable {
     // This handel the commits
     public Commit (String message) throws IOException {
         this.message = message;
-        this.parent = getParentSha();
-        this.timestamp = getTimestamp();
+        this.parent = Head.getHeadSha1();
+        this.timestamp = new Date();
         trackedFiles = getTrackedFiles() ; // previos commit tracked_files
 
         File files_added = Repository.STAGED_ADD;
@@ -104,20 +104,26 @@ public class Commit implements Serializable {
     }
 
 
-    public File createCommitFile(String name) throws IOException {
-        File file = new File(Repository.COMMITS_DIR, name);
+    public File createCommitFile(String commitSha) throws IOException {
+        File file = new File(Repository.COMMITS_DIR, commitSha);
         return file;
     }
 
 
-    public static Commit getCommitBySha(String shaForCommit){
-        File currentCommit = new File(Repository.COMMITS_DIR, shaForCommit);
-        Commit commit = Utils.readObject(currentCommit, Commit.class);
-        return commit;
-    }
+    public static Commit getCommitBySha(String shaForCommit) {
 
-    public static String getCurrentCommitSha(){
-        return Utils.readContentsAsString(Repository.HEAD_FILE);
+        File commitsDir = Repository.COMMITS_DIR;
+        if (!commitsDir.exists()) {
+            throw new IllegalArgumentException("Commits directory does not exist.");
+        }
+
+        File commitFile = new File(commitsDir, shaForCommit);
+        if (!commitFile.exists()) {
+            throw new IllegalArgumentException("Commit file does not exist: " + shaForCommit);
+        }
+
+
+        return Utils.readObject(commitFile, Commit.class);
     }
 
     static void clearIndex () {
@@ -166,16 +172,4 @@ public class Commit implements Serializable {
         return trackedFiles;
     }
 
-    static boolean isTrackedFile(String path) {
-        if(Commit.trackedFiles == null) {
-            return false ;
-        }
-        return Commit.trackedFiles.containsKey(path) ;
-    }
-    static void removeFromTrackedFile(String path) {
-        if(Commit.trackedFiles == null) {
-            return ;
-        }
-        Commit.trackedFiles.remove(path);
-    }
 }

@@ -1,12 +1,7 @@
 package gitlet;
 
 import java.io.File;
-import static gitlet.Utils.*;
-import java.io.File;
 import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 /** Represents a gitlet repository.
  *  TODO: It's a good idea to give a description here of what else this Class
@@ -61,26 +56,55 @@ public class Repository implements Cloneable {
      */
     /** TODO : add this file to sageed for addition */
     public static void add (String fileName) throws IOException {
-          IndexArea.addForAddition(fileName);
+        checkExistRepo();
+        IndexArea.add(fileName);
     }
 
 
     public  static void rm(String fileName) throws IOException {
-        IndexArea.addForRemoval(fileName);
+        checkExistRepo();
+        IndexArea.rm(fileName);
     }
 
 
     public static void commit(String message) throws IOException {
+        checkExistRepo();
+
         Commit commit = new Commit(message);
     }
 
+    public static void log() throws IOException {
+        checkExistRepo();
 
+        String sha1 = Head.getHeadSha1() ;
+        File f = new File(COMMITS_DIR, sha1);
+
+        while (true) {
+            System.out.println("===");
+            Commit commit = Utils.readObject(f , Commit.class);
+            System.out.println("commit : " + commit.getShaCommit());
+            System.out.println("Time : " + commit.getTimestamp());
+            System.out.println("Message : " + commit.message());
+            if(commit.getParentSha().equals("")) {
+                break;
+            }
+            sha1 = commit.getParentSha();
+            f = new File(COMMITS_DIR, sha1);
+            System.out.println();
+        }
+    }
 
     public static boolean repoExists() {
         if (GITLET_DIR.exists()) {
             return true;
         }
         return false;
+    }
+    public static void checkExistRepo(){
+        if (!repoExists()){
+            System.out.println("Not in an initialized Gitlet directory.");
+            System.exit(0);
+        }
     }
 
 }
