@@ -80,7 +80,7 @@ public class IndexArea {
 
     }
     public static void addForRemoval(String fileName) throws IOException {
-        String fullPath = new File(System.getProperty("user.dir")).getAbsolutePath() + "/" + fileName;
+        String fullPath = new File(System.getProperty("user.dir")).getAbsolutePath() + "\\" + fileName;
         String hashedPath = HelperMethods.hashPath(fullPath);
         /* TODO : why i do that */
         File folder = new File(Repository.STAGED_RM, hashedPath);

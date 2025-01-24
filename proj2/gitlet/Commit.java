@@ -34,7 +34,12 @@ public class Commit implements Serializable {
         this.parent = Head.getHeadSha1();
         this.timestamp = new Date();
         trackedFiles = getTrackedFiles() ; // previos commit tracked_files
+        processStagedFiles();
+        clearIndex();
+        saveCommit() ;
+    }
 
+    public void processStagedFiles() throws IOException {
         File files_added = Repository.STAGED_ADD;
         File files_removed = Repository.STAGED_RM;
 
@@ -80,9 +85,6 @@ public class Commit implements Serializable {
                 }
             }
         }
-
-        clearIndex();
-        saveCommit() ;
     }
 
     // the name of the file which will be added is the sha1

@@ -73,27 +73,6 @@ public class Repository implements Cloneable {
         Commit commit = new Commit(message);
     }
 
-    public static void log() throws IOException {
-        checkExistRepo();
-
-        String sha1 = Head.getHeadSha1() ;
-        File f = new File(COMMITS_DIR, sha1);
-
-        while (true) {
-            System.out.println("===");
-            Commit commit = Utils.readObject(f , Commit.class);
-            System.out.println("commit : " + commit.getShaCommit());
-            System.out.println("Time : " + commit.getTimestamp());
-            System.out.println("Message : " + commit.message());
-            if(commit.getParentSha().equals("")) {
-                break;
-            }
-            sha1 = commit.getParentSha();
-            f = new File(COMMITS_DIR, sha1);
-            System.out.println();
-        }
-    }
-
     public static boolean repoExists() {
         if (GITLET_DIR.exists()) {
             return true;
