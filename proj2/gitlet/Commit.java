@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static gitlet.Utils.getFileSha;
-//put
 public class Commit implements Serializable {
 
     private String message;

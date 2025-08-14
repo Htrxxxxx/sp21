@@ -80,10 +80,6 @@ class Utils {
         }
     }
 
-    /** Deletes the file named FILE if it exists and is not a directory.
-     *  Returns true if FILE was deleted, and false otherwise.  Refuses
-     *  to delete FILE and throws IllegalArgumentException unless the
-     *  directory designated by FILE also contains a directory named .gitlet. */
     static boolean restrictedDelete(String file) {
         return restrictedDelete(new File(file));
     }
